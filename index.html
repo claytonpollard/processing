@@ -40,45 +40,77 @@
     </header>
 
     <div class="container">
-      <ul id="sketchList"></ul>
+      <div id="sketchContainer"></div>
+      <button id="prevButton">Previous</button>
+      <button id="nextButton">Next</button>
     </div>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const repoName = "claytonpollard/processing";
         const basePath = "sketches/";
+        let currentSketchIndex = 0;
+        let sketches = [];
+
+        const sketchContainer = document.getElementById("sketchContainer");
+        const prevButton = document.getElementById("prevButton");
+        const nextButton = document.getElementById("nextButton");
+
+        function displaySketch(index) {
+          if (index >= 0 && index < sketches.length) {
+            sketchContainer.innerHTML = "";
+            let sketchInfo = sketches[index];
+            sketchContainer.innerHTML = `<strong>${sketchInfo.user}</strong>: ${sketchInfo.name}<br>`;
+            let canvas = document.createElement("canvas");
+            sketchContainer.appendChild(canvas);
+
+            fetch(sketchInfo.download_url)
+              .then((response) => response.text())
+              .then((code) => {
+                new Processing(canvas, code);
+              });
+          }
+        }
 
         fetch(`https://api.github.com/repos/${repoName}/contents/${basePath}`)
           .then((response) => response.json())
           .then((folders) => {
-            const sketchList = document.getElementById("sketchList");
             folders.forEach((folder) => {
               if (folder.type === "dir") {
                 fetch(
                   `https://api.github.com/repos/${repoName}/contents/${folder.path}`
                 )
                   .then((response) => response.json())
-                  .then((sketches) => {
-                    sketches.forEach((sketch) => {
+                  .then((sketchFiles) => {
+                    sketchFiles.forEach((sketch) => {
                       if (sketch.name.endsWith(".pde")) {
-                        let listItem = document.createElement("li");
-                        listItem.innerHTML = `<strong>${folder.name}</strong>: ${sketch.name}<br>`;
-                        let canvas = document.createElement("canvas");
-                        listItem.appendChild(canvas);
-                        sketchList.appendChild(listItem);
-
-                        fetch(sketch.download_url)
-                          .then((response) => response.text())
-                          .then((code) => {
-                            new Processing(canvas, code);
-                          });
+                        sketches.push({
+                          user: folder.name,
+                          name: sketch.name,
+                          download_url: sketch.download_url,
+                        });
                       }
                     });
+                    displaySketch(currentSketchIndex);
                   });
               }
             });
           })
           .catch((error) => console.error("Error fetching sketches:", error));
+
+        prevButton.addEventListener("click", function () {
+          if (currentSketchIndex > 0) {
+            currentSketchIndex--;
+            displaySketch(currentSketchIndex);
+          }
+        });
+
+        nextButton.addEventListener("click", function () {
+          if (currentSketchIndex < sketches.length - 1) {
+            currentSketchIndex++;
+            displaySketch(currentSketchIndex);
+          }
+        });
       });
     </script>
   </body>
