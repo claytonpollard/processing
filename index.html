@@ -50,27 +50,38 @@
 
         fetch(`https://api.github.com/repos/${repoName}/contents/${basePath}`)
           .then((response) => response.json())
-          .then((data) => {
+          .then((users) => {
             const sketchList = document.getElementById("sketchList");
-            data.forEach((item) => {
-              if (item.type === "dir") {
-                let user = item.name;
+            users.forEach((user) => {
+              if (user.type === "dir") {
                 fetch(
-                  `https://api.github.com/repos/${repoName}/contents/${item.path}`
+                  `https://api.github.com/repos/${repoName}/contents/${user.path}`
                 )
                   .then((response) => response.json())
-                  .then((sketches) => {
-                    sketches.forEach((sketch) => {
-                      if (sketch.name.endsWith(".pde")) {
-                        let listItem = document.createElement("li");
-                        listItem.innerHTML = `<strong>${user}</strong>: ${sketch.name}`;
+                  .then((sketchFolders) => {
+                    sketchFolders.forEach((folder) => {
+                      if (folder.type === "dir") {
+                        fetch(
+                          `https://api.github.com/repos/${repoName}/contents/${folder.path}`
+                        )
+                          .then((response) => response.json())
+                          .then((sketches) => {
+                            sketches.forEach((sketch) => {
+                              if (sketch.name.endsWith(".pde")) {
+                                let listItem = document.createElement("li");
+                                listItem.innerHTML = `<strong>${user.name}/${folder.name}</strong>: ${sketch.name}<br>`;
+                                let canvas = document.createElement("canvas");
+                                listItem.appendChild(canvas);
+                                sketchList.appendChild(listItem);
 
-                        let canvasContainer = document.createElement("canvas");
-                        canvasContainer.dataset.processingSources =
-                          sketch.download_url;
-                        listItem.appendChild(canvasContainer);
-
-                        sketchList.appendChild(listItem);
+                                fetch(sketch.download_url)
+                                  .then((response) => response.text())
+                                  .then((code) => {
+                                    new Processing(canvas, code);
+                                  });
+                              }
+                            });
+                          });
                       }
                     });
                   });
