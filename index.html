@@ -51,6 +51,7 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const repoName = "claytonpollard/processing";
+        const basePath = "/sketches/";
         let currentSketchIndex = 0;
         let sketches = [];
 
@@ -69,18 +70,14 @@
             sketchContainer.appendChild(canvas);
 
             fetch(
-              "/sketches/" +
-                sketchInfo.folderPath +
-                "/" +
-                sketchInfo.name +
-                ".pde"
+              basePath + sketchInfo.folderPath + "/" + sketchInfo.name + ".pde"
             )
               .then((response) => response.text())
               .then((code) => {
                 new Processing(canvas, code);
               });
 
-            fetch("/sketches/" + sketchInfo.folderPath + "/readme.txt")
+            fetch(basePath + sketchInfo.folderPath + "/readme.txt")
               .then((response) => {
                 if (response.ok) {
                   return response.text();
@@ -96,37 +93,19 @@
           }
         }
 
-        function fetchSketches(folderPath) {
-          fetch(
-            `https://api.github.com/repos/${repoName}/contents/${folderPath}`
-          )
-            .then((response) => response.json())
-            .then((files) => {
-              files.forEach((file) => {
-                if (file.name.endsWith(".pde")) {
-                  sketches.push({
-                    user: folderPath.split("/").pop(),
-                    name: file.name.replace(".pde", ""),
-                    folderPath: folderPath.replace("sketches/", ""),
-                  });
-                }
-              });
-              if (currentSketchIndex === 0 && sketches.length > 0) {
-                displaySketch(currentSketchIndex);
-              }
-            })
-            .catch((error) => console.error("Error fetching sketches:", error));
-        }
-
-        // Fetch the list of sketch folders from GitHub
         fetch(`https://api.github.com/repos/${repoName}/contents/sketches`)
           .then((response) => response.json())
-          .then((folders) => {
-            folders.forEach((folder) => {
-              if (folder.type === "dir") {
-                fetchSketches(folder.path);
+          .then((data) => {
+            data.forEach((item) => {
+              if (item.type === "dir") {
+                sketches.push({
+                  user: item.name,
+                  name: "sketch",
+                  folderPath: item.path.replace("sketches/", ""),
+                });
               }
             });
+            displaySketch(currentSketchIndex);
           })
           .catch((error) =>
             console.error("Error fetching sketch list:", error)
