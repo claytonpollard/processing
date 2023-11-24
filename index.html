@@ -7,6 +7,7 @@
     <title>Processing Sketches Showcase</title>
     <style>
       body {
+        font-family: sans-serif;
         margin: 0;
         padding: 0;
         background-color: #f4f4f4;
@@ -50,7 +51,7 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const repoName = "claytonpollard/processing";
-        const basePath = "sketches/";
+        const basePath = "/sketches/";
         let currentSketchIndex = 0;
         let sketches = [];
 
@@ -68,15 +69,15 @@
             let canvas = document.createElement("canvas");
             sketchContainer.appendChild(canvas);
 
-            fetch(sketchInfo.download_url)
+            fetch(
+              basePath + sketchInfo.folderPath + "/" + sketchInfo.name + ".pde"
+            )
               .then((response) => response.text())
               .then((code) => {
                 new Processing(canvas, code);
               });
 
-            // Attempt to fetch and display readme.txt
-            let readmeUrl = `https://raw.githubusercontent.com/${repoName}/master/${sketchInfo.folderPath}/readme.txt`;
-            fetch(readmeUrl)
+            fetch(basePath + sketchInfo.folderPath + "/readme.txt")
               .then((response) => {
                 if (response.ok) {
                   return response.text();
@@ -84,7 +85,6 @@
                 throw new Error("Readme not found");
               })
               .then((readmeText) => {
-                // Replace newline characters with HTML line break
                 readmeContainer.innerHTML = readmeText.replace(/\n/g, "<br>");
               })
               .catch((error) => {
@@ -93,32 +93,23 @@
           }
         }
 
-        fetch(`https://api.github.com/repos/${repoName}/contents/${basePath}`)
+        fetch(`https://api.github.com/repos/${repoName}/contents/sketches`)
           .then((response) => response.json())
-          .then((folders) => {
-            folders.forEach((folder) => {
-              if (folder.type === "dir") {
-                fetch(
-                  `https://api.github.com/repos/${repoName}/contents/${folder.path}`
-                )
-                  .then((response) => response.json())
-                  .then((sketchFiles) => {
-                    sketchFiles.forEach((sketch) => {
-                      if (sketch.name.endsWith(".pde")) {
-                        sketches.push({
-                          user: folder.name,
-                          name: sketch.name,
-                          download_url: sketch.download_url,
-                          folderPath: folder.path,
-                        });
-                      }
-                    });
-                    displaySketch(currentSketchIndex);
-                  });
+          .then((data) => {
+            data.forEach((item) => {
+              if (item.type === "dir") {
+                sketches.push({
+                  user: item.name,
+                  name: "sketch", // Assuming each folder has a sketch.pde
+                  folderPath: item.path.replace("sketches/", ""),
+                });
               }
             });
+            displaySketch(currentSketchIndex);
           })
-          .catch((error) => console.error("Error fetching sketches:", error));
+          .catch((error) =>
+            console.error("Error fetching sketch list:", error)
+          );
 
         prevButton.addEventListener("click", function () {
           if (currentSketchIndex > 0) {
