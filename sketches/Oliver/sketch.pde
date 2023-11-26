@@ -5,7 +5,7 @@ int startX, startY;
 
 void setup() {
   frameRate(60); // Set a specific framerate so that the game does not run too fast
-  fullScreen(); // Set size of canvas to the size of the screen
+  size(1280, 720);
   
   fuses = new ArrayList<Fuse>(); // Create an empty ArrayList of Fuse objects
   particles = new ArrayList<Particle>(); // Create an empty ArrayList of Particle objects
