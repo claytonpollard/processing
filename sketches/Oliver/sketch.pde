@@ -1,23 +1,23 @@
-ArrayList<Fuse> fuses;
-ArrayList<Particle> particles;
-ArrayList<Explosion> explosions;
-int startX, startY;
+var fuses;
+var particles;
+var explosions;
+var startX, startY;
 
-void setup() {
-  frameRate(60); // Set a specific framerate so that the game does not run too fast
+function setup() {
+  frameRate(60);
   size(1280, 720);
   
-  fuses = new ArrayList<Fuse>(); // Create an empty ArrayList of Fuse objects
-  particles = new ArrayList<Particle>(); // Create an empty ArrayList of Particle objects
-  explosions = new ArrayList<Explosion>(); // Create an empty ArrayList of Explosion objects
+  fuses = [];
+  particles = [];
+  explosions = [];
   
   colorMode(HSB);
 }
 
-void draw() {
-  background(0); // Set the background to black
+function draw() {
+  background(0);
   
-  if (mousePressed == true) {
+  if (mousePressed) {
     stroke(255);
     strokeWeight(height / 200);
     line(startX, startY, mouseX, mouseY);
@@ -26,61 +26,62 @@ void draw() {
     startY = mouseY;
   }
   
-  for (int i = 0; i < fuses.size(); i++) {
-    Fuse fuse = fuses.get(i);
+  for (var i = fuses.length - 1; i >= 0; i--) {
+    var fuse = fuses[i];
     fuse.step();
-    if (fuse.done()) { fuses.remove(i); }
+    if (fuse.done()) { 
+      fuses.splice(i, 1); 
+    }
   }
-  
-  for (int i = 0; i < particles.size(); i++) {
-    Particle particle = particles.get(i);
+
+  for (var i = particles.length - 1; i >= 0; i--) {
+    var particle = particles[i];
     particle.step();
-    if (particle.done()) { particles.remove(i); }
+    if (particle.done()) { 
+      particles.splice(i, 1); 
+    }
   }
-  
-  for (int i = 0; i < explosions.size(); i++) {
-    Explosion explosion = explosions.get(i);
+
+  for (var i = explosions.length - 1; i >= 0; i--) {
+    var explosion = explosions[i];
     explosion.step();
-    if (explosion.done()) { explosions.remove(i); }
+    if (explosion.done()) { 
+      explosions.splice(i, 1); 
+    }
   }
 }
 
-void mouseReleased() {
-  fuses.add(new Fuse(color(random(0, 255), 255, 255), startX, startY, mouseX, mouseY));
+function mouseReleased() {
+  fuses.push(new Fuse(color(random(0, 255), 255, 255), startX, startY, mouseX, mouseY));
 }
 
-class Fuse {
-  int time, maxTime;
-  int sx, sy, ex, ey;
-  color col;
-  
-  Fuse(color col, int sx, int sy, int ex, int ey) {
-    this.sx = sx;
-    this.sy = sy;
-    this.ex = ex;
-    this.ey = ey;
-    this.col = col;
-    maxTime = 100 * ceil(sqrt(sq(ex - sx) + sq(ey - sy))) / height;
-    time = maxTime;
-  }
-  
-  void step() {
-    time -= 1;
+// Fuse class
+function Fuse(col, sx, sy, ex, ey) {
+  this.sx = sx;
+  this.sy = sy;
+  this.ex = ex;
+  this.ey = ey;
+  this.col = col;
+  this.maxTime = 100 * ceil(sqrt(sq(ex - sx) + sq(ey - sy))) / height;
+  this.time = this.maxTime;
+
+  this.step = function() {
+    this.time -= 1;
     stroke(255);
     strokeWeight(height / 200);
-    line(sx + (ex - sx) * map(time, maxTime, 0, 0, 1), sy + (ey - sy) * map(time, maxTime, 0, 0, 1), ex, ey);
+    line(this.sx + (this.ex - this.sx) * map(this.time, this.maxTime, 0, 0, 1), this.sy + (this.ey - this.sy) * map(this.time, this.maxTime, 0, 0, 1), this.ex, this.ey);
     noStroke();
-    fill(col);
-    circle(ex, ey, height / 50);
-    particles.add(new Particle(col, sx + (ex - sx) * map(time, maxTime, 0, 0, 1), sy + (ey - sy) * map(time, maxTime, 0, 0, 1)));
-    particles.add(new Particle(col, sx + (ex - sx) * map(time + 0.3, maxTime, 0, 0, 1), sy + (ey - sy) * map(time + 0.3, maxTime, 0, 0, 1)));
-    particles.add(new Particle(col, sx + (ex - sx) * map(time - 0.3, maxTime, 0, 0, 1), sy + (ey - sy) * map(time - 0.3, maxTime, 0, 0, 1)));
+    fill(this.col);
+    circle(this.ex, this.ey, height / 50);
+    particles.push(new Particle(this.col, this.sx + (this.ex - this.sx) * map(this.time, this.maxTime, 0, 0, 1), this.sy + (this.ey - this.sy) * map(this.time, this.maxTime, 0, 0, 1)));
+    particles.push(new Particle(this.col, this.sx + (this.ex - this.sx) * map(this.time + 0.3, this.maxTime, 0, 0, 1), this.sy + (this.ey - this.sy) * map(this.time + 0.3, this.maxTime, 0, 0, 1)));
+    particles.push(new Particle(this.col, this.sx + (this.ex - this.sx) * map(this.time - 0.3, this.maxTime, 0, 0, 1), this.sy + (this.ey - this.sy) * map(this.time - 0.3, this.maxTime, 0, 0, 1)));
   }
-  
-  boolean done() {
-    if (time <= 0) {
-      for (int i = 0; i < 500; i++) {
-        explosions.add(new Explosion(col, maxTime, ex, ey));
+
+  this.done = function() {
+    if (this.time <= 0) {
+      for (var i = 0; i < 500; i++) {
+        explosions.push(new Explosion(this.col, this.maxTime, this.ex, this.ey));
       }
       return true;
     } else {
@@ -89,58 +90,48 @@ class Fuse {
   }
 }
 
-class Explosion {
-  int x, y, time;
-  color col;
-  PVector movement;
-  
-  Explosion(color col, int maxTime, int x, int y) {
-    this.x = x;
-    this.y = y;
-    this.time = maxTime;
-    this.col = col;
-    this.movement = new PVector(random(-1, 1), random(-1, 1));
-    movement.normalize();
-    movement.x *= random(0, 5);
-    movement.y *= random(0, 5);
-  }
-  
-  void step() {
-    time -= 1;
-    x += movement.x;
-    y += movement.y;
-    movement.x += 1.2 * (noise(random(1000)) - 0.455);
-    movement.y += 1.2 * (noise(random(1000)) - 0.455);
+// Explosion class
+function Explosion(col, maxTime, x, y) {
+  this.x = x;
+  this.y = y;
+  this.time = maxTime;
+  this.col = col;
+  this.movement = new PVector(random(-1, 1), random(-1, 1));
+  this.movement.normalize();
+  this.movement.x *= random(0, 5);
+  this.movement.y *= random(0, 5);
+
+  this.step = function() {
+    this.time -= 1;
+    this.x += this.movement.x;
+    this.y += this.movement.y;
+    this.movement.x += 1.2 * (noise(random(1000)) - 0.455);
+    this.movement.y += 1.2 * (noise(random(1000)) - 0.455);
     noStroke();
-    fill(col, map(time, 200, 0, 255, 0) + 150 * (noise(random(1000)) - 0.5));
-    circle(x + noise(time) - 0.5, y + noise(time) - 0.5, height / 50);
+    fill(this.col, map(this.time, 200, 0, 255, 0) + 150 * (noise(random(1000)) - 0.5));
+    circle(this.x + noise(this.time) - 0.5, this.y + noise(this.time) - 0.5, height / 50);
   }
-  
-  boolean done() {
-    return time <= 0;
+
+  this.done = function() {
+    return this.time <= 0;
   }
 }
 
-class Particle {
-  int time;
-  float x, y;
-  color col;
-  
-  Particle(color col, float x, float y) {
-    this.time = 10;
-    this.x = x;
-    this.y = y;
-    this.col = col;
-  }
-  
-  void step() {
-    time -= 1;
+// Particle class
+function Particle(col, x, y) {
+  this.time = 10;
+  this.x = x;
+  this.y = y;
+  this.col = col;
+
+  this.step = function() {
+    this.time -= 1;
     noStroke();
-    fill(col, time * 127 / 8);
-    circle(x + (noise(x) - 0.5) * 10, y + (noise(y) - 0.5) * 10, height / 80);
+    fill(this.col, this.time * 127 / 8);
+    circle(this.x + (noise(this.x) - 0.5) * 10, this.y + (noise(this.y) - 0.5) * 10, height / 80);
   }
-  
-  boolean done() {
-    return time <= 0;
+
+  this.done = function() {
+    return this.time <= 0;
   }
 }
