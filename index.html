@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.8/processing.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <title>Processing Sketches Showcase</title>
     <style>
       body {
@@ -83,15 +82,15 @@
                 new Processing(canvas, code);
               });
 
-            fetch(basePath + sketchInfo.folderPath + "/readme.md")
+            fetch(basePath + sketchInfo.folderPath + "/readme.txt")
               .then((response) => {
                 if (response.ok) {
                   return response.text();
                 }
                 throw new Error("Readme not found");
               })
-              .then((markdownText) => {
-                readmeContainer.innerHTML = marked(markdownText);
+              .then((readmeText) => {
+                readmeContainer.innerHTML = readmeText.replace(/\n/g, "<br>");
               })
               .catch((error) => {
                 console.log(error.message);

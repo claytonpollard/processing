@@ -6,4 +6,4 @@ To use it:
 - Release to create a fuse
 - The longer the fuse: the bigger the explosion
 
-Oliver's doens't work using Processing.js. Click here to download it:[here](/sketches/Oliver/Explosions.zip)
+Oliver's doens't work using Processing.js. Download it here: https://delightful-gumption-d433e4.netlify.app/sketches/Oliver/Explosions.zip
