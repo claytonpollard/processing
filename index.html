@@ -58,6 +58,7 @@
         const basePath = "/sketches/";
         let currentSketchIndex = 0;
         let sketches = [];
+        let currentP5Instance = null;
 
         const sketchContainer = document.getElementById("sketchContainer");
         const sketchTitle = document.getElementById("sketchTitle");
@@ -65,7 +66,15 @@
         const prevButton = document.getElementById("prevButton");
         const nextButton = document.getElementById("nextButton");
 
+        function clearP5Instance() {
+          if (currentP5Instance) {
+            currentP5Instance.remove();
+            currentP5Instance = null;
+          }
+        }
+
         function loadP5Sketch(sketchPath) {
+          clearP5Instance();
           fetch(sketchPath)
             .then((response) => response.text())
             .then((sketchCode) => {
@@ -75,10 +84,16 @@
               script.text = sketchCode;
               document.body.appendChild(script);
             })
+            .then(() => {
+              if (typeof p5 !== "undefined") {
+                currentP5Instance = new p5();
+              }
+            })
             .catch((error) => console.error("Error loading p5 sketch:", error));
         }
 
         function loadProcessingSketch(sketchPath) {
+          clearP5Instance();
           fetch(sketchPath)
             .then((response) => response.text())
             .then((sketchCode) => {
