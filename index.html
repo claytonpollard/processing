@@ -78,7 +78,9 @@
           fetch(sketchPath)
             .then((response) => response.text())
             .then((sketchCode) => {
-              new Processing(sketchContainer, sketchCode);
+              let canvas = document.createElement("canvas");
+              sketchContainer.appendChild(canvas);
+              new Processing(canvas, sketchCode);
             })
             .catch((error) =>
               console.error("Error loading Processing sketch:", error)
