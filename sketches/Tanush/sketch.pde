@@ -4,7 +4,6 @@ void setup() {
 }
 
 void draw() {
-  // Random colors
   int r = (int) random(256);
   int g = (int) random(256);
   int b = (int) random(256);
@@ -12,8 +11,8 @@ void draw() {
   float x = random(width);
   float y = random(height);
   
-  // Draw a circle
-  ellipse(x, y, 10, 10);
+  ellipse(x, y, random(50), random(50));
+  noStroke();
 }
 
 
