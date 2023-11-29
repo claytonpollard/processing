@@ -1,0 +1,1 @@
+This is called the interactive square which with mouse movements, changes size and when it becomes its biggest possible form it turns to the colour red.
