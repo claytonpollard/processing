@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.8/processing.min.js"></script>
-    <title>Processing Sketches Showcase</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <title>Sketches Showcase</title>
     <style>
       body {
         font-family: sans-serif;
@@ -36,7 +37,7 @@
   <body>
     <header>
       <div class="container">
-        <h1>Processing Sketches Showcase</h1>
+        <h1>Sketches Showcase</h1>
       </div>
     </header>
 
@@ -64,6 +65,26 @@
         const prevButton = document.getElementById("prevButton");
         const nextButton = document.getElementById("nextButton");
 
+        function loadP5Sketch(sketchPath) {
+          fetch(sketchPath)
+            .then((response) => response.text())
+            .then((sketchCode) => {
+              new p5(sketchCode, sketchContainer);
+            })
+            .catch((error) => console.error("Error loading p5 sketch:", error));
+        }
+
+        function loadProcessingSketch(sketchPath) {
+          fetch(sketchPath)
+            .then((response) => response.text())
+            .then((sketchCode) => {
+              new Processing(sketchContainer, sketchCode);
+            })
+            .catch((error) =>
+              console.error("Error loading Processing sketch:", error)
+            );
+        }
+
         function displaySketch(index) {
           if (index >= 0 && index < sketches.length) {
             sketchContainer.innerHTML = "";
@@ -71,16 +92,20 @@
             readmeContainer.innerHTML = "";
             let sketchInfo = sketches[index];
             sketchTitle.innerHTML = `<strong>${sketchInfo.user}</strong><br><br />`;
-            let canvas = document.createElement("canvas");
-            sketchContainer.appendChild(canvas);
 
-            fetch(
-              basePath + sketchInfo.folderPath + "/" + sketchInfo.name + ".pde"
-            )
-              .then((response) => response.text())
-              .then((code) => {
-                new Processing(canvas, code);
-              });
+            let sketchPathJS = basePath + sketchInfo.folderPath + "/sketch.js";
+            let sketchPathPDE =
+              basePath + sketchInfo.folderPath + "/sketch.pde";
+
+            fetch(sketchPathJS)
+              .then((response) => {
+                if (response.ok) {
+                  loadP5Sketch(sketchPathJS);
+                } else {
+                  loadProcessingSketch(sketchPathPDE);
+                }
+              })
+              .catch(() => loadProcessingSketch(sketchPathPDE));
 
             fetch(basePath + sketchInfo.folderPath + "/readme.txt")
               .then((response) => {
