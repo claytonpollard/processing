@@ -69,7 +69,13 @@
           fetch(sketchPath)
             .then((response) => response.text())
             .then((sketchCode) => {
-              new p5(sketchCode, sketchContainer);
+              sketchContainer.innerHTML = ""; // Clear the container
+              let script = document.createElement("script");
+              script.textContent = sketchCode;
+              sketchContainer.appendChild(script);
+              if (typeof p5 !== "undefined") {
+                new p5(); // Assuming the sketch code uses 'setup' and 'draw' functions
+              }
             })
             .catch((error) => console.error("Error loading p5 sketch:", error));
         }
