@@ -1,0 +1,1 @@
+My interactive digital artwork is named Snake Game. To pilot the snake, use wasd or arrow keys.

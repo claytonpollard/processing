@@ -1,0 +1,1 @@
+pretty simple jus move ur mouse around and click (∪.∪ )...zzz
